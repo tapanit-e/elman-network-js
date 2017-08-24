@@ -61,11 +61,10 @@ NN.RNN.prototype.__initNet = function() {
 		this.activationInputs.push(1.0);
 
 	for (var i = 0; i < this.hiddens; i++)
-		this.activationHiddens.push(1.0);
+		this.activationHiddens.push(1.0);	
 		
 	for (var i = 0; i < this.hiddens; i++)
 		this.previousHidden.push(1.0);
-
 
 	for (var i = 0; i < this.numOfOutputs; i++)
 		this.activationOutputs.push(1.0);
@@ -135,7 +134,7 @@ NN.RNN.prototype.forward = function(input) {
 	
 	for (var i = 0; i < this.activationHiddens.length; i++)
 		this.previousHidden.push(this.activationHiddens[i]);
-
+	
 	for (var i = 0; i < this.numOfOutputs; i++) {
 
 		var sum = 0.0;
@@ -160,8 +159,6 @@ NN.RNN.prototype.backward = function(outputs) {
 
 	var outputDeltas = [],
 	    err = 0.0;
-	    
-	this.previousHidden = [];
 	
 	for (var i = 0; i < this.numOfHiddenUnits; i++)
 		this.previousHidden.push();
@@ -228,6 +225,8 @@ NN.QLearning = function(args) {
 	this.epsilon = NN.Helper.getOption(args, 'epsilon', 0.1);
 	this.gamma = NN.Helper.getOption(args, 'gamma', 0.5);
 	this.nn = new NN.RNN(args);
+	this.memory = [];
+	this.unfoldMemory = NN.Helper.getOption(args, 'unfold', 20);
 
 };
 
@@ -275,6 +274,15 @@ NN.QLearning.prototype.act = function(state) {
 	this.currentAction = action;
 	this.currentState = state;
 	
+	var states = {};
+	
+	states.previousState = this.previousState;
+	states.previousAction = this.previousAction;
+	states.currentAction = this.currentAction;
+	states.currentState = this.currentState;
+	
+	this.memory.push(states);
+	
 	return action;
 
 };
@@ -294,6 +302,28 @@ NN.QLearning.prototype.learn = function(reward) {
 	}
 	
 	this.currentReward = reward;
+	
+	this.memory[this.memory.length - 1].currentReward = this.currentReward;
+	
+	for (var i = this.memory.length - 1; i >= 0; i--) {
+	
+		var temp = this.memory[i];
+		
+		if (temp.previousState && temp.previousAction) {
+		
+			var actions = this.nn.forward(temp.currentState);
+			var qValue = temp.currentReward + this.gamma * this.nn.activationOutputs[this.argMax(actions)];
+			var predicts = this.nn.forward(temp.previousState);
+			predicts[temp.previousReward] = qValue;
+		
+			this.nn.backward(predicts);	
+		
+		}
+	
+	}
+	
+	if (this.memory.length >= this.unfoldMemory)
+		this.memory = [];
 
 };
 
@@ -320,7 +350,7 @@ NN.QLearning.prototype.learn = function(reward) {
 	
 	var totalReward = 0;
 	
-	for (var i = 0; i < 10000; i++) {
+	for (var i = 0; i < 4000; i++) {
 	
 		var action = q.act([x, y]);
 		var reward;
