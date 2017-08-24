@@ -159,9 +159,6 @@ NN.RNN.prototype.backward = function(outputs) {
 
 	var outputDeltas = [],
 	    err = 0.0;
-	
-	for (var i = 0; i < this.numOfHiddenUnits; i++)
-		this.previousHidden.push();
 
 	for (var i = 0; i < this.numOfOutputs; i++) {
 
