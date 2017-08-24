@@ -326,8 +326,8 @@ NN.QLearning.prototype.learn = function(reward) {
 		
 		this.memory = [];
 		
-		for (var i = 0; i < this.rnn.previousHidden.length; i++)
-			this.rnn.this.previousHidden[i] = 0;
+		for (var i = 0; i < this.nn.previousHidden.length; i++)
+			this.nn.previousHidden[i] = 0;
 		
 	}
 	
