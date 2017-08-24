@@ -322,9 +322,15 @@ NN.QLearning.prototype.learn = function(reward) {
 	
 	}
 	
-	if (this.memory.length >= this.unfoldMemory)
+	if (this.memory.length >= this.unfoldMemory) {
+		
 		this.memory = [];
-
+		
+		for (var i = 0; i < this.rnn.previousHidden.length; i++)
+			this.rnn.this.previousHidden[i] = 0;
+		
+	}
+	
 };
 
 (function() {
