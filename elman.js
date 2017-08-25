@@ -291,7 +291,9 @@ NN.QLearning.prototype.learn = function(reward) {
 	
 	this.currentReward = reward;
 	
-	if (this.unfoldCounter++ >= this.unfoldMemory) {
+	// memory unfolding never takes place if it is set to 0 
+	if (this.unfoldCounter++ >= this.unfoldMemory && 
+		this.unfoldMemory > 0) {
 		
 		this.unfoldCounter = 0;
 		
@@ -314,6 +316,7 @@ NN.QLearning.prototype.learn = function(reward) {
 	options.gamma = 0.6;
 	options.epsilon = 0.1;
 	options.isQ = true;
+	options.unfold = 0;
 	
 	var x = 0;
 	var y = 0;
