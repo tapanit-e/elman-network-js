@@ -222,8 +222,8 @@ NN.QLearning = function(args) {
 	this.epsilon = NN.Helper.getOption(args, 'epsilon', 0.1);
 	this.gamma = NN.Helper.getOption(args, 'gamma', 0.5);
 	this.nn = new NN.RNN(args);
-	this.memory = [];
 	this.unfoldMemory = NN.Helper.getOption(args, 'unfold', 20);
+	this.unfoldCounter = 0;
 
 };
 
@@ -271,15 +271,6 @@ NN.QLearning.prototype.act = function(state) {
 	this.currentAction = action;
 	this.currentState = state;
 	
-	var states = {};
-	
-	states.previousState = this.previousState;
-	states.previousAction = this.previousAction;
-	states.currentAction = this.currentAction;
-	states.currentState = this.currentState;
-	
-	this.memory.push(states);
-	
 	return action;
 
 };
@@ -300,28 +291,9 @@ NN.QLearning.prototype.learn = function(reward) {
 	
 	this.currentReward = reward;
 	
-	this.memory[this.memory.length - 1].currentReward = this.currentReward;
-	
-	for (var i = this.memory.length - 1; i >= 0; i--) {
-	
-		var temp = this.memory[i];
+	if (this.unfoldCounter++ >= this.unfoldMemory) {
 		
-		if (temp.previousState && temp.previousAction) {
-		
-			var actions = this.nn.forward(temp.currentState);
-			var qValue = temp.currentReward + this.gamma * this.nn.activationOutputs[this.argMax(actions)];
-			var predicts = this.nn.forward(temp.previousState);
-			predicts[temp.previousAction] = qValue;
-		
-			this.nn.backward(predicts);	
-		
-		}
-	
-	}
-	
-	if (this.memory.length >= this.unfoldMemory) {
-		
-		this.memory = [];
+		this.unfoldCounter = 0;
 		
 		for (var i = 0; i < this.nn.previousHidden.length; i++)
 			this.nn.previousHidden[i] = 0;
@@ -339,7 +311,7 @@ NN.QLearning.prototype.learn = function(reward) {
 	options.hiddenUnits = 100;
 	options.input = 2;
 	options.output = 4;
-	options.gamma = 0.3;
+	options.gamma = 0.6;
 	options.epsilon = 0.1;
 	options.isQ = true;
 	
@@ -353,7 +325,7 @@ NN.QLearning.prototype.learn = function(reward) {
 	
 	var totalReward = 0;
 	
-	for (var i = 0; i < 4000; i++) {
+	for (var i = 0; i < 10000; i++) {
 	
 		var action = q.act([x, y]);
 		var reward;
