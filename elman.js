@@ -311,7 +311,7 @@ NN.QLearning.prototype.learn = function(reward) {
 			var actions = this.nn.forward(temp.currentState);
 			var qValue = temp.currentReward + this.gamma * this.nn.activationOutputs[this.argMax(actions)];
 			var predicts = this.nn.forward(temp.previousState);
-			predicts[temp.previousReward] = qValue;
+			predicts[temp.previousAction] = qValue;
 		
 			this.nn.backward(predicts);	
 		
