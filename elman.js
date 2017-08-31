@@ -1,5 +1,6 @@
 'use strict';
 
+// TODO: add backpropagation through time
 var NN = NN || {};
 
 NN.Helper = {};
